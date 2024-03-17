@@ -12,7 +12,9 @@ document.addEventListener('DOMContentLoaded', function () {
       '2400 Cabrillo Hwy S, Half Moon Bay, CA 94019, United States',
     ];
 
-    fixedAddresses.forEach(async (fixedAddress) => {
+    let routesInfo = [];
+
+    for (const fixedAddress of fixedAddresses) {
       try {
         const response = await fetch('/calculate-route', {
           method: 'POST',
@@ -25,11 +27,27 @@ document.addEventListener('DOMContentLoaded', function () {
           }),
         });
         const data = await response.json();
-        console.log(data);
-        // Process and display the data as needed
+
+        // Extract duration for each route. Assuming one leg per route.
+        const duration = data.routes[0].legs[0].duration.value; // Duration in seconds
+        routesInfo.push({ address: fixedAddress, duration: duration });
       } catch (error) {
         console.error('Error fetching route data:', error);
       }
+    }
+
+    // Sort routes by duration in ascending order
+    routesInfo.sort((a, b) => a.duration - b.duration);
+
+    // Log sorted routes or update the UI as needed
+    console.log('Sorted Routes:', routesInfo);
+    // Example: Update the DOM to display sorted routes
+    const resultsElement = document.getElementById('results');
+    resultsElement.innerHTML = ''; // Clear previous results
+    routesInfo.forEach((route) => {
+      const routeElement = document.createElement('div');
+      routeElement.textContent = `Address: ${route.address}, Duration: ${route.duration} seconds`;
+      resultsElement.appendChild(routeElement);
     });
   });
 });
